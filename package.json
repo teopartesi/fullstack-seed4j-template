@@ -1,0 +1,29 @@
+{
+  "name": "starter",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Starter",
+  "license": "UNLICENSED",
+  "scripts": {
+    "prepare": "husky",
+    "prettier:check": "prettier --check .",
+    "prettier:format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@prettier/plugin-xml": "3.4.2",
+    "husky": "9.1.7",
+    "lint-staged": "17.6.0",
+    "prettier": "3.9.10",
+    "prettier-plugin-gherkin": "4.0.0",
+    "prettier-plugin-java": "2.11.0",
+    "prettier-plugin-organize-imports": "4.3.0",
+    "prettier-plugin-packagejson": "3.0.2",
+    "semantic-release": "25.0.9",
+    "semantic-release-gitmoji-config": "1.0.0",
+    "typescript": "7.0.2"
+  },
+  "packageManager": "npm@11.19.0",
+  "engines": {
+    "node": ">=24"
+  }
+}

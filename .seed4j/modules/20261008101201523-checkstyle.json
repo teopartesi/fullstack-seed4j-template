@@ -1,0 +1,12 @@
+{
+  "module": "checkstyle",
+  "date": "2026-10-08T10:12:01.523184994Z",
+  "properties": {
+    "packageName": "fr.teopartesi.starter",
+    "projectName": "Starter",
+    "baseName": "starter",
+    "nodePackageManager": "npm",
+    "endOfLine": "If",
+    "indentSize": 2
+  }
+}

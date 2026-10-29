@@ -1,0 +1,276 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_call:
+    secrets:
+      SONAR_TOKEN:
+        required: false
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format:
+    name: 🎨Format check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      HUSKY: '0'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.21.0
+          cache: npm
+
+      - name: Setup project npm version
+        run: npm install --global "$(node --print 'require("./package.json").packageManager')"
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run prettier check
+        run: npm run prettier:check
+
+  frontend:
+    name: 🔨Build, 🧪Test and lint - Frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.21.0
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Setup project npm version
+        run: npm install --global "$(node --print 'require("./frontend/package.json").packageManager')"
+
+      - name: Install frontend dependencies
+        run: npm ci --prefix frontend --ignore-scripts
+
+      - name: Run frontend lint
+        run: npm run lint --prefix frontend
+
+      - name: Run frontend tests with coverage
+        run: npm run test:ci --prefix frontend
+
+      - name: Check frontend coverage report
+        run: |
+          if [ ! -s frontend/coverage/starter-frontend/lcov.info ]; then
+            echo "::error::Rapport LCOV absent ou vide : frontend/coverage/starter-frontend/lcov.info."
+            exit 1
+          fi
+
+      - name: Build browser and SSR bundles
+        run: npm run build --prefix frontend
+
+      - name: Upload frontend coverage
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: frontend-coverage
+          path: frontend/coverage/starter-frontend/lcov.info
+          retention-days: 7
+
+      - name: Upload frontend build
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: frontend-build
+          path: frontend/dist/starter-frontend/
+          retention-days: 7
+
+  backend:
+    name: 🔨Build and 🧪Test - Backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 25
+          cache: maven
+          cache-dependency-path: pom.xml
+
+      - name: Build, test and verify coverage
+        run: ./mvnw --batch-mode --no-transfer-progress clean verify
+
+      - name: Check backend coverage report
+        run: |
+          if [ ! -s target/jacoco/jacoco.xml ]; then
+            echo "::error::Rapport JaCoCo fusionné absent ou vide : target/jacoco/jacoco.xml."
+            exit 1
+          fi
+
+      - name: Upload backend analysis data
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: backend-reports
+          path: |
+            target/classes/
+            target/test-classes/
+            target/surefire-reports/
+            target/failsafe-reports/
+            target/jacoco/
+            target/site/jacoco/
+            target/site/jacoco-it/
+            target/checkstyle-result.xml
+          if-no-files-found: error
+          retention-days: 7
+
+  scan:
+    name: ☢️ Sonar
+    runs-on: ubuntu-latest
+    needs: [frontend, backend]
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 25
+          cache: maven
+          cache-dependency-path: pom.xml
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.21.0
+
+      - name: Download backend analysis data
+        uses: actions/download-artifact@v8
+        with:
+          name: backend-reports
+          path: target
+
+      - name: Download frontend coverage
+        uses: actions/download-artifact@v8
+        with:
+          name: frontend-coverage
+          path: frontend/coverage/starter-frontend
+
+      - name: Check analysis data
+        run: |
+          if [ ! -s target/jacoco/jacoco.xml ]; then
+            echo "::error::Rapport JaCoCo fusionné absent ou vide : target/jacoco/jacoco.xml."
+            exit 1
+          fi
+          if [ ! -d target/classes ] || [ ! -d target/test-classes ]; then
+            echo "::error::Classes Java compilées absentes."
+            exit 1
+          fi
+          if [ ! -s frontend/coverage/starter-frontend/lcov.info ]; then
+            echo "::error::Rapport LCOV absent ou vide : frontend/coverage/starter-frontend/lcov.info."
+            exit 1
+          fi
+
+      - name: Determine Sonar availability
+        id: sonar
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          CURRENT_REF: ${{ github.ref }}
+          CURRENT_REPOSITORY: ${{ github.repository }}
+          PR_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          CURRENT_ACTOR: ${{ github.actor }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+          SONAR_CI_ENABLED: ${{ vars.SONAR_CI_ENABLED }}
+        run: |
+          if [ "$CURRENT_ACTOR" = "dependabot[bot]" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "reason=Dependabot n'a pas accès au secret Sonar." >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ "$EVENT_NAME" = "pull_request" ] && [ "$PR_HEAD_REPOSITORY" != "$CURRENT_REPOSITORY" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "reason=Les pull requests externes n'ont pas accès au secret Sonar." >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ "$EVENT_NAME" = "push" ] && [ "$CURRENT_REF" != "refs/heads/main" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "reason=Seuls les push sur main peuvent lancer Sonar." >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ "$SONAR_CI_ENABLED" != "true" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "reason=Sonar n'est pas activé pour ce dépôt." >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ -z "$SONAR_TOKEN" ] || [ -z "$SONAR_ORGANIZATION" ] || [ -z "$SONAR_PROJECT_KEY" ]; then
+            echo "::error::SONAR_CI_ENABLED=true mais SONAR_TOKEN, SONAR_ORGANIZATION ou SONAR_PROJECT_KEY est absent."
+            exit 1
+          fi
+
+          echo "enabled=true" >> "$GITHUB_OUTPUT"
+          echo "reason=Configuration Sonar disponible." >> "$GITHUB_OUTPUT"
+
+      - name: Explain skipped Sonar analysis
+        if: ${{ steps.sonar.outputs.enabled != 'true' }}
+        env:
+          SKIP_REASON: ${{ steps.sonar.outputs.reason }}
+        run: |
+          echo "::warning::Analyse Sonar non exécutée : $SKIP_REASON"
+          echo "## Sonar non exécuté" >> "$GITHUB_STEP_SUMMARY"
+          echo "$SKIP_REASON" >> "$GITHUB_STEP_SUMMARY"
+          echo "Les builds, tests et contrôles de couverture ont néanmoins été exécutés." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Analyze Java and frontend and wait for Sonar Quality Gate
+        if: ${{ steps.sonar.outputs.enabled == 'true' }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+        run: >-
+          ./mvnw --batch-mode --no-transfer-progress
+          org.sonarsource.scanner.maven:sonar-maven-plugin:5.8.0.7211:sonar
+          -Dsonar.host.url=https://sonarcloud.io
+          -Dsonar.projectKey="$SONAR_PROJECT_KEY"
+          -Dsonar.organization="$SONAR_ORGANIZATION"
+          -Dsonar.sources=backend/main/java,frontend/src
+          -Dsonar.tests=backend/test/java,frontend/src
+          '-Dsonar.exclusions=frontend/src/**/*.spec.ts'
+          '-Dsonar.test.inclusions=backend/test/java/**/*.java,frontend/src/**/*.spec.ts'
+          -Dsonar.coverage.jacoco.xmlReportPaths=target/jacoco/jacoco.xml
+          -Dsonar.javascript.lcov.reportPaths=frontend/coverage/starter-frontend/lcov.info
+          -Dsonar.qualitygate.wait=true
+          -Dsonar.qualitygate.timeout=300

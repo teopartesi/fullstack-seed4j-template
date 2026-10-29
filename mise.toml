@@ -1,0 +1,92 @@
+[tools]
+node = "24.21.0"
+java = "temurin-25"
+
+[tasks."deps:clean"]
+description = "Nettoyer les dépendances npm de mon projet"
+dir = "{{ config_root }}"
+run = "rm -rf node_modules dist package-lock.json"
+
+[tasks."deps:clean_install"]
+description = "Installe les dépendances npm depuis le lockfile"
+dir = "{{ config_root }}"
+run = "npm ci"
+
+[tasks."deps:install"]
+description = "Installe les dépendances npm"
+dir = "{{ config_root }}"
+run = "npm install"
+
+[tasks."frontend:clean"]
+description = "Nettoye les dépendances Angular"
+dir = "{{ config_root }}/frontend"
+run = "rm -rf node_modules dist package-lock.json"
+
+[tasks."frontend:ci"]
+description = "Installe les dépendances Angular depuis le lockfile"
+dir = "{{ config_root }}/frontend"
+run = '"$(mise where node)/bin/npm" ci'
+
+[tasks."frontend:install"]
+description = "Installe les dépendances Angular"
+dir = "{{ config_root }}/frontend"
+run = '"$(mise where node)/bin/npm" install'
+
+[tasks."frontend:run"]
+description = "Démarre le serveur de développement Angular avec SSR"
+dir = "{{ config_root }}/frontend"
+run = '"$(mise where node)/bin/npm" start'
+
+[tasks."frontend:lint"]
+description = "Vérifie le code TypeScript et les templates Angular"
+dir = "{{ config_root }}/frontend"
+run = '"$(mise where node)/bin/npm" run lint'
+
+[tasks."frontend:test"]
+description = "Lance les tests Angular et produit la couverture LCOV"
+dir = "{{ config_root }}/frontend"
+run = '"$(mise where node)/bin/npm" run test:ci'
+
+[tasks."frontend:build"]
+description = "Construit les bundles navigateur et serveur Angular"
+dir = "{{ config_root }}/frontend"
+run = '"$(mise where node)/bin/npm" run build'
+
+[tasks."frontend:check"]
+description = "Lance le lint, les tests et le build Angular"
+dir = "{{ config_root }}/frontend"
+run = '"$(mise where node)/bin/npm" run check'
+
+[tasks."backend:install"]
+description = "Précharge les dépendances et plugins Maven"
+dir = "{{ config_root }}"
+run = "./mvnw dependency:go-offline"
+
+[tasks."backend:run"]
+description = "Démarre le backend avec le profil local"
+dir = "{{ config_root }}"
+run = "./mvnw spring-boot:run -Dspring-boot.run.profiles=local"
+
+[tasks."backend:test"]
+description = "Lance les tests unitaires Java"
+dir = "{{ config_root }}"
+run = "./mvnw test"
+
+[tasks."backend:verify"]
+description = "Vérifie la compilation, les tests et la couverture"
+dir = "{{ config_root }}"
+run = "./mvnw clean verify"
+
+[tasks.format]
+description = "Applique le formatage du projet"
+dir = "{{ config_root }}"
+run = '"$(mise where node)/bin/npm" run prettier:format'
+
+[tasks."format:check"]
+description = "Vérifie le formatage du projet"
+dir = "{{ config_root }}"
+run = '"$(mise where node)/bin/npm" run prettier:check'
+
+[tasks.check]
+description = "Lance toutes les vérifications du projet"
+depends = ["format:check", "backend:verify", "frontend:check"]

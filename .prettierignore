@@ -1,0 +1,9 @@
+target
+build
+package-lock.json
+frontend/.angular
+frontend/coverage
+frontend/dist
+frontend/node_modules
+gradle
+.gradle

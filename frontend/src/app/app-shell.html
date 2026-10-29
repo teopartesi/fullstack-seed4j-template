@@ -1,0 +1,52 @@
+<a
+  class="sr-only fixed left-4 top-4 z-50 rounded-md bg-slate-950 px-4 py-2 font-semibold text-white focus:not-sr-only"
+  href="#main-content"
+>
+  Aller au contenu
+</a>
+
+<div class="flex min-h-screen flex-col bg-slate-50 text-slate-950">
+  <header class="border-b border-slate-200 bg-white">
+    <nav
+      aria-label="Navigation principale"
+      class="mx-auto flex w-full max-w-6xl items-center justify-between gap-6 px-6 py-5 lg:px-8"
+    >
+      <a
+        aria-label="Starter, accueil"
+        class="inline-flex items-center gap-3 rounded-md font-semibold tracking-tight text-slate-950"
+        routerLink="/"
+      >
+        <span
+          aria-hidden="true"
+          class="grid size-10 place-items-center rounded-xl bg-amber-400 text-lg shadow-sm"
+          >S</span
+        >
+        <span class="text-xl">Starter</span>
+      </a>
+
+      <a
+        ariaCurrentWhenActive="page"
+        class="rounded-md px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-slate-950"
+        routerLink="/"
+        routerLinkActive="bg-slate-100 text-slate-950"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Accueil
+      </a>
+    </nav>
+  </header>
+
+  <main
+    class="mx-auto flex w-full max-w-6xl flex-1 px-6 py-12 lg:px-8 lg:py-20"
+    id="main-content"
+    tabindex="-1"
+  >
+    <router-outlet />
+  </main>
+
+  <footer class="border-t border-slate-200 bg-white">
+    <div class="mx-auto w-full max-w-6xl px-6 py-6 text-sm text-slate-600 lg:px-8">
+      Starter — un socle prêt à personnaliser.
+    </div>
+  </footer>
+</div>

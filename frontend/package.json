@@ -1,0 +1,54 @@
+{
+  "name": "starter-frontend",
+  "version": "0.0.0",
+  "scripts": {
+    "build": "ng build",
+    "check": "npm run lint && npm run test:ci && npm run build",
+    "lint": "ng lint",
+    "ng": "ng",
+    "serve:ssr": "node dist/starter-frontend/server/server.mjs",
+    "start": "ng serve",
+    "test": "ng test",
+    "test:ci": "ng test --no-watch --coverage",
+    "watch": "ng build --watch --configuration development"
+  },
+  "private": true,
+  "packageManager": "npm@11.19.0",
+  "engines": {
+    "node": ">=24.15.0 <25",
+    "npm": "11.19.0"
+  },
+  "dependencies": {
+    "@angular/common": "^22.2.0",
+    "@angular/compiler": "^22.2.0",
+    "@angular/core": "^22.2.0",
+    "@angular/forms": "^22.2.0",
+    "@angular/platform-browser": "^22.2.0",
+    "@angular/platform-server": "^22.2.0",
+    "@angular/router": "^22.2.0",
+    "@angular/ssr": "^22.2.4",
+    "express": "^5.1.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.16.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^22.2.4",
+    "@angular/cli": "^22.2.4",
+    "@angular/compiler-cli": "^22.2.0",
+    "@eslint/js": "^10.0.1",
+    "@tailwindcss/postcss": "^4.1.12",
+    "@types/express": "^5.0.1",
+    "@types/node": "^26.6.5",
+    "@vitest/coverage-v8": "5.0.5",
+    "angular-eslint": "22.6.0",
+    "eslint": "^10.12.0",
+    "jsdom": "^30.0.0",
+    "postcss": "^8.5.3",
+    "prettier": "^3.8.1",
+    "tailwindcss": "^4.1.12",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "8.72.0",
+    "vitest": "^5.0.0"
+  }
+}

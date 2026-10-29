@@ -1,0 +1,12 @@
+{
+  "module": "init",
+  "date": "2026-10-08T10:12:01.258667844Z",
+  "properties": {
+    "packageName": "fr.teopartesi.starter",
+    "projectName": "Starter",
+    "baseName": "starter",
+    "nodePackageManager": "npm",
+    "endOfLine": "If",
+    "indentSize": 2
+  }
+}
