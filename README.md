@@ -32,13 +32,13 @@ Le Maven Wrapper est fourni : aucune installation globale de Maven n'est nécess
 Après activation du mode template sur GitHub, créer un dépôt indépendant puis exécuter l’initialiseur :
 
 ```bash
-gh repo create teopartesi/musicquiz \
+gh repo create teopartesi/name_project \
   --template teopartesi/fullstack-seed4j-template \
   --private \
   --clone
 
-cd musicquiz
-./scripts/init-project.sh musicquiz fr.teopartesi.musicquiz "Music Quiz" MusicQuiz
+cd name_project
+./scripts/init-project.sh name_project fr.teopartesi.name_project "Name Project" name_project
 ```
 
 La procédure complète est décrite dans [Créer un projet depuis le template](documentation/getting-started.md).
