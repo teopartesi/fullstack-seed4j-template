@@ -35,6 +35,30 @@ incomplète ne doit pas être présentée comme une analyse réussie.
 Les secrets et variables GitHub ne sont pas copiés lorsqu'un nouveau dépôt est créé depuis un template. Cette configuration
 doit donc être répétée pour chaque dépôt qui active Sonar.
 
+## Releases manuelles
+
+Le workflow `.github/workflows/release.yml` crée une release uniquement lorsqu'il est lancé manuellement depuis la branche
+`main`. Il réutilise d'abord toute la CI : une release n'est donc tentée qu'après la réussite du formatage, des tests, des
+couvertures et des builds.
+
+La version est calculée par `semantic-release` à partir des commits depuis la dernière release. La configuration accepte les
+Gitmojis et les Conventional Commits : par exemple `💥` ou un changement incompatible produit une version majeure, `✨` ou
+`feat` une version mineure, et `🐛` ou `fix` une version corrective. S'il n'existe aucun commit publiable, le workflow réussit
+sans créer de nouvelle version.
+
+Lorsqu'une version est déterminée, le workflow :
+
+- crée le tag `vX.Y.Z` ;
+- crée la GitHub Release et ses notes ;
+- met à jour `CHANGELOG.md` sur `main` avec un commit portant `[skip ci]`.
+
+Le workflow ne publie aucun paquet ou image et ne déploie vers aucun environnement. Un projet créé depuis le template peut
+ajouter ces étapes plus tard, dans un workflow de déploiement propre à son infrastructure, en prenant la release comme point
+d'entrée.
+
+Le jeton `GITHUB_TOKEN` fourni automatiquement par GitHub Actions suffit. Si `main` est protégée, les règles du dépôt doivent
+autoriser GitHub Actions à pousser le commit de changelog ; à défaut, la création de la release échouera explicitement.
+
 ## Contributions externes
 
 Les pull requests provenant d'un fork et les exécutions Dependabot ne lancent pas Sonar, car elles ne doivent pas recevoir

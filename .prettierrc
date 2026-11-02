@@ -28,3 +28,11 @@ overrides:
   - files: ['*.jsonc']
     options:
       trailingComma: none
+  # The import organizer does not support the root TypeScript 7 toolchain yet.
+  - files: ['*.cjs', '*.mjs']
+    options:
+      plugins:
+        - '@prettier/plugin-xml'
+        - prettier-plugin-gherkin
+        - prettier-plugin-java
+        - prettier-plugin-packagejson

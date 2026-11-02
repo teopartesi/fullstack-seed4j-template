@@ -99,6 +99,7 @@ fi
 
 required_paths=(
   .github/workflows/ci.yml
+  .github/workflows/release.yml
   .seed4j/modules
   backend/main/java/fr/teopartesi/starter
   backend/test/java/fr/teopartesi/starter
@@ -110,6 +111,7 @@ required_paths=(
   package.json
   package-lock.json
   pom.xml
+  release.config.mjs
 )
 
 for path in "${required_paths[@]}"; do

@@ -7,7 +7,9 @@
   "scripts": {
     "prepare": "husky",
     "prettier:check": "prettier --check .",
-    "prettier:format": "prettier --write ."
+    "prettier:format": "prettier --write .",
+    "semantic-release": "semantic-release",
+    "test:release-config": "node --test tests/release-config.test.mjs"
   },
   "devDependencies": {
     "@prettier/plugin-xml": "3.4.2",
