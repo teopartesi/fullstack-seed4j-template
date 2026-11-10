@@ -3,6 +3,9 @@ name: Release
 run-name: Release from ${{ github.ref_name }} by @${{ github.actor }}
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
