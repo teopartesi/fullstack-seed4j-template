@@ -1,3 +1,15 @@
+## [1.0.1](https://github.com/teopartesi/fullstack-seed4j-template/compare/v1.0.0...v1.0.1) (2026-11-13)
+
+
+### 🐛 Fix a bug
+
+* fix: exclude generated changelog from format checks ([6ea4dfc](https://github.com/teopartesi/fullstack-seed4j-template/commit/6ea4dfc2b666a7f83bc6c6d7114b1f1fb64e86ec))
+
+
+### 💚 Fix CI Build
+
+* **workflow:** Change Workflow to automate release on branch main after PR & push ([41f9b73](https://github.com/teopartesi/fullstack-seed4j-template/commit/41f9b73f0802d2bb5170415f61509e316782cfc5))
+
 # 1.0.0 (2026-11-02)
 
 
